@@ -40,15 +40,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _muatDataLokal();
   }
 
-  // --- LOGIKA SHAREDPREFERENCES --- //
-
-  // 1. Membaca data dari SharedPreferences
+  // 🔹 LOAD DATA
   Future<void> _muatDataLokal() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _totalSaldo = prefs.getInt('total_saldo') ?? 0;
-      
-      // Membaca list string JSON dan di-decode kembali ke List Map
+
       List<String>? dataStringList = prefs.getStringList('riwayat');
       if (dataStringList != null) {
         _riwayatPengeluaran = dataStringList
@@ -58,18 +55,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // 2. Menyimpan data ke SharedPreferences
+  // 🔹 SAVE DATA
   Future<void> _simpanDataLokal() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('total_saldo', _totalSaldo);
 
-    // Mengubah List Map menjadi List String JSON
     List<String> dataStringList =
         _riwayatPengeluaran.map((item) => jsonEncode(item)).toList();
     await prefs.setStringList('riwayat', dataStringList);
   }
 
-  // 3. Menambah transaksi baru
+  // 🔹 TAMBAH PENGELUARAN
   void _tambahPengeluaran(String judul, int nominal) {
     if (nominal <= 0 || judul.isEmpty) return;
 
@@ -82,10 +78,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
     });
 
-    _simpanDataLokal(); // Simpan permanen ke storage HP
+    _simpanDataLokal();
   }
 
-  // 4. Modal Bottom Sheet Form Input (UI Modern)
+  // 🔹 MODAL INPUT
   void _tampilkanModalInput() {
     final judulController = TextEditingController();
     final nominalController = TextEditingController();
@@ -105,37 +101,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tambah Pengeluaran', style: Theme.of(context).textTheme.titleLarge),
+            const Text(
+              "Tambah Pengeluaran",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
+
             TextField(
               controller: judulController,
               decoration: const InputDecoration(
-                labelText: 'Keterangan (misal: Beli Pop Ice / Print Tugas)',
+                labelText: 'Keterangan',
                 border: OutlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 12),
+
             TextField(
               controller: nominalController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Nominal (Rp)',
+                labelText: 'Nominal',
                 border: OutlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 16),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
                   final judul = judulController.text;
-                  final nominal = int.tryParse(nominalController.text) ?? 0;
+                  final nominal =
+                      int.tryParse(nominalController.text) ?? 0;
+
                   _tambahPengeluaran(judul, nominal);
                   Navigator.pop(ctx);
                 },
-                child: const Text('Simpan Pengeluaran'),
+                child: const Text("Simpan"),
               ),
             )
           ],
@@ -148,72 +153,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SakuSiswa Dashboard'),
-        centerTitle: true,
+        title: const Text("SakuSiswa"),
       ),
+
+      // 🔥 UI SUDAH MIRIP CONTOH
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // CARD UI STANDAR INDUSTRI
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              color: Colors.teal.shade700,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const Text('Sisa Uang Saku Saat Ini',
-                        style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Rp $_totalSaldo',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+
+            // 🔹 CARD SALDO
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    "Sisa Uang Saku Saat Ini",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Rp $_totalSaldo",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 12),
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() => _totalSaldo += 50000);
-                        _simpanDataLokal();
-                      },
-                      icon: const Icon(Icons.add_card, color: Colors.white),
-                      label: const Text('Isi Uang Saku (+Rp50.000)',
-                          style: TextStyle(color: Colors.white)),
-                    )
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() => _totalSaldo += 50000);
+                      _simpanDataLokal();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.teal,
+                    ),
+                    child: const Text("Isi Uang Saku (+Rp50.000)"),
+                  )
+                ],
               ),
             ),
+
             const SizedBox(height: 20),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Riwayat Pengeluaran',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+            const Text(
+              "Riwayat Pengeluaran",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+
             const SizedBox(height: 10),
-            
-            // DYNAMIC LISTVIEW
+
+            // 🔹 LIST
             Expanded(
               child: _riwayatPengeluaran.isEmpty
-                  ? const Center(child: Text('Belum ada pengeluaran hari ini. Hemat banget! 🎉'))
+                  ? const Center(child: Text("Belum ada pengeluaran"))
                   : ListView.builder(
                       itemCount: _riwayatPengeluaran.length,
                       itemBuilder: (context, index) {
                         final item = _riwayatPengeluaran[index];
+
                         return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: ListTile(
                             leading: const CircleAvatar(
-                              child: Icon(Icons.shopping_bag_outlined),
+                              backgroundColor: Colors.teal,
+                              child: Icon(Icons.money_off, color: Colors.white),
                             ),
                             title: Text(item['judul']),
                             subtitle: Text(item['tanggal']),
                             trailing: Text(
-                              '- Rp ${item['nominal']}',
+                              "- Rp ${item['nominal']}",
                               style: const TextStyle(
-                                  color: Colors.red, fontWeight: FontWeight.bold),
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         );
@@ -223,10 +247,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+
+      // 🔥 TOMBOL TAMBAH (MODAL)
+      floatingActionButton: FloatingActionButton(
         onPressed: _tampilkanModalInput,
-        icon: const Icon(Icons.remove_circle_outline),
-        label: const Text('Catat Pengeluaran'),
+        child: const Icon(Icons.add),
       ),
     );
   }
