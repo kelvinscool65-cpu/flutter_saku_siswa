@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:saku_siswa/main.dart';
-import 'package:saku_siswa/views/dashboar_screen.dart';
+import 'package:saku_siswa/views/dashboard_screen.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
